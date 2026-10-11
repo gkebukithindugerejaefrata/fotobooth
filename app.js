@@ -2,7 +2,19 @@
 (function(){
 'use strict';
 var BF=window.BF,$=BF.$,esc=BF.esc,ic=BF.ic,toast=BF.toast,cfg=BF.cfg;
+// Ukuran dasar komposisi foto: rasio portrait 3:4.
+// Semua preview, hasil jepret, thumbnail, dan ekspor mengikuti rasio ini.
 var W=720,H=960;
+var CAMERA_IDEAL_WIDTH=1920;
+var CAMERA_IDEAL_HEIGHT=1440;
+var MAX_SOURCE_EDGE=2400;
+var EXPORT_WIDTH=1080;
+var THUMB_WIDTH=360;
+function photoHeight(width){return Math.round(width*H/W)}
+function scaledSize(width,height,maxEdge){
+  var scale=Math.min(1,maxEdge/Math.max(width,height));
+  return {width:Math.max(1,Math.round(width*scale)),height:Math.max(1,Math.round(height*scale))};
+}
 var MAX_VOICE=3*1024*1024;            // batas file suara (byte)
 var MAX_REC=Math.max(5,+cfg.MAX_RECORD_SECONDS||30);
 var CAN_LIVE=!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
@@ -57,10 +69,13 @@ function curSrc(){
 }
 function drawStage(){
   var c=stage.getContext('2d');
+  // Pastikan ukuran bitmap preview selalu sama dengan kanvas dasar 3:4.
+  if(stage.width!==W)stage.width=W;
+  if(stage.height!==H)stage.height=H;
   compose(c,W,H,curSrc(),curFrame(),true);
   if(S.count){
-    c.save();c.fillStyle='rgba(34,10,20,.6)';c.beginPath();c.arc(360,430,150,0,6.2832);c.fill();c.strokeStyle='#D9B873';c.lineWidth=2;c.stroke();
-    c.fillStyle='#E8CF9A';c.font='italic 700 170px "Bodoni Moda", Georgia, serif';c.textAlign='center';c.fillText(String(S.count),360,492);c.restore();
+    c.save();c.fillStyle='rgba(34,10,20,.6)';c.beginPath();c.arc(W/2,H*0.448,Math.min(W,H)*0.2083,0,6.2832);c.fill();c.strokeStyle='#D9B873';c.lineWidth=2;c.stroke();
+    c.fillStyle='#E8CF9A';c.font='italic 700 170px "Bodoni Moda", Georgia, serif';c.textAlign='center';c.fillText(String(S.count),W/2,H*0.5125);c.restore();
   }
 }
 function drawThumbs(){
@@ -93,8 +108,8 @@ async function loadFile(f){
     try{bmp=await createImageBitmap(f,{imageOrientation:'from-image'})}
     catch(e){bmp=await new Promise(function(res,rej){var i=new Image(),u=URL.createObjectURL(f);i.onload=function(){URL.revokeObjectURL(u);res(i)};i.onerror=rej;i.src=u})}
     w=bmp.width||bmp.naturalWidth;h=bmp.height||bmp.naturalHeight;
-    var k=Math.min(1,1600/Math.max(w,h));
-    var cv=document.createElement('canvas');cv.width=Math.round(w*k);cv.height=Math.round(h*k);
+    var size=scaledSize(w,h,MAX_SOURCE_EDGE);
+    var cv=document.createElement('canvas');cv.width=size.width;cv.height=size.height;
     cv.getContext('2d').drawImage(bmp,0,0,cv.width,cv.height);
     if(bmp.close)bmp.close();
     stopLive();setPhoto(cv);
@@ -103,7 +118,7 @@ async function loadFile(f){
 async function startLive(){
   stopLive();
   try{
-    var stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:S.facing,width:{ideal:1280},height:{ideal:1280}},audio:false});
+    var stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:S.facing,width:{ideal:CAMERA_IDEAL_WIDTH},height:{ideal:CAMERA_IDEAL_HEIGHT}},audio:false});
     cam.srcObject=stream;await cam.play();
     S.live={stream:stream,mirror:S.facing==='user'};loop();syncUI();
   }catch(e){S.live=null;toast('Kamera tidak bisa dibuka. Izinkan akses kamera, atau pilih foto dari galeri HP.');syncUI()}
@@ -117,8 +132,10 @@ async function snap(){
   if(!S.live||S.count)return;
   for(var n=3;n>0;n--){if(!S.live){S.count=0;return}S.count=n;syncUI();await BF.sleep(1000)}
   S.count=0;if(!S.live)return;
-  var w=cam.videoWidth,h=cam.videoHeight,k=Math.min(1,1600/Math.max(w,h));
-  var cv=document.createElement('canvas');cv.width=Math.round(w*k);cv.height=Math.round(h*k);
+  var w=cam.videoWidth,h=cam.videoHeight;
+  if(!w||!h){toast('Kamera belum siap. Coba jepret kembali.');return}
+  var size=scaledSize(w,h,MAX_SOURCE_EDGE);
+  var cv=document.createElement('canvas');cv.width=size.width;cv.height=size.height;
   var c=cv.getContext('2d');if(S.live.mirror){c.translate(cv.width,0);c.scale(-1,1)}
   c.drawImage(cam,0,0,cv.width,cv.height);
   flash();stopLive();setPhoto(cv);
@@ -219,7 +236,7 @@ function uuid(){
   return h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20);
 }
 function renderJpeg(cw,quals,maxBytes){
-  var cv=document.createElement('canvas');cv.width=cw;cv.height=Math.round(cw*4/3);
+  var cv=document.createElement('canvas');cv.width=cw;cv.height=photoHeight(cw);
   compose(cv.getContext('2d'),cv.width,cv.height,S.photo,curFrame(),false);
   return (async function(){
     var last=null;
@@ -246,8 +263,8 @@ async function save(){
   var sb=BF.sb,bucket=cfg.BUCKET,id=uuid(),f=curFrame();
   var photoPath='photos/'+id+'.jpg',thumbPath='photos/'+id+'_t.jpg',voicePath=null,vtype=null;
   try{
-    var full=await renderJpeg(1080,[0.86,0.78,0.7],1800*1024);
-    var thumb=await renderJpeg(360,[0.78,0.68],80*1024);
+    var full=await renderJpeg(EXPORT_WIDTH,[0.86,0.78,0.7],1800*1024);
+    var thumb=await renderJpeg(THUMB_WIDTH,[0.78,0.68],80*1024);
     if(!full||!thumb)throw new Error('export');
     var up=function(path,blob,type){return sb.storage.from(bucket).upload(path,blob,{contentType:type,cacheControl:'31536000',upsert:false})};
     var r=await up(photoPath,full,'image/jpeg');if(r.error)throw r.error;
