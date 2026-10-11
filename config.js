@@ -9,7 +9,7 @@ window.BILIK_CONFIG = {
 
   // Judul di bagian atas halaman dan nama kegiatan yang tercatat di galeri
   TITLE: 'Galeri Jemaat',
-  EVENT_NAME: 'Hari Kesejahteraan Keluarga',
+  EVENT_NAME: 'Ibadah Minggu @Efrata',
 
   // Batas panjang voice note saat merekam (detik)
   MAX_RECORD_SECONDS: 30,
@@ -22,8 +22,8 @@ window.BILIK_CONFIG = {
   //           Jika diisi, foto dipas di area itu. Jika kosong, foto memenuhi seluruh bingkai.
   // Ukuran PNG: rasio 3:4, disarankan 1080 x 1440 piksel. Bagian foto dibuat transparan.
   FRAMES: [
-    { id: 'contoh-biru',  name: 'Biru',  src: 'frames/contoh-biru.png',  window: [60, 140, 600, 640] },
-    { id: 'contoh-putih', name: 'Putih', src: 'frames/contoh-putih.png', window: [36, 36, 648, 756] },
-    { id: 'contoh-emas',  name: 'Emas',  src: 'frames/contoh-emas.png',  window: [70, 70, 580, 680] }
+    { id: 'contoh-biru',  name: 'Frame 1',  src: 'frames/contoh-beludru.png',  window: [60, 140, 600, 640] },
+    { id: 'contoh-putih', name: 'Frame 2', src: 'frames/contoh-gading.png', window: [36, 36, 648, 756] },
+    { id: 'contoh-emas',  name: 'Frame 3',  src: 'frames/contoh-noir.png',  window: [70, 70, 580, 680] }
   ]
 };
