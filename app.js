@@ -7,7 +7,6 @@ var MAX_VOICE=3*1024*1024;            // batas file suara (byte)
 var MAX_REC=Math.max(5,+cfg.MAX_RECORD_SECONDS||30);
 var CAN_LIVE=!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
 var CAN_REC=CAN_LIVE&&!!window.MediaRecorder;
-var HINT_FONT='700 30px Figtree, system-ui, sans-serif';
 
 var S={view:'booth',frame:0,photo:null,live:null,count:0,facing:'user',vstate:'idle',voice:null,rec:null,
   items:[],limit:24,filter:'all',busy:false,loaded:false,galErr:false};
@@ -35,12 +34,12 @@ function cover(c,src,x,y,w,h,big,k){
     if(src.mirror){c.translate(2*x+w,0);c.scale(-1,1)}
     c.drawImage(src.el,dx,dy,dw,dh);
   }else{
-    var g=c.createLinearGradient(x,y,x,y+h);g.addColorStop(0,'#3A57EA');g.addColorStop(1,'#101C70');
+    var g=c.createLinearGradient(x,y,x,y+h);g.addColorStop(0,'#6B1F36');g.addColorStop(1,'#220A14');
     c.fillStyle=g;c.fillRect(x,y,w,h);
-    c.fillStyle='rgba(255,255,255,.26)';
+    c.fillStyle='rgba(243,230,210,.2)';
     c.beginPath();c.arc(x+w/2,y+h*.42,w*.14,0,6.2832);c.fill();
     c.beginPath();c.ellipse(x+w/2,y+h*.86,w*.3,h*.21,0,0,6.2832);c.fill();
-    if(big){c.fillStyle='rgba(255,255,255,.88)';c.font='700 '+Math.round(30*k)+'px Figtree, system-ui, sans-serif';c.textAlign='center';
+    if(big){c.fillStyle='rgba(243,230,210,.88)';c.font='italic 500 '+Math.round(36*k)+'px "Bodoni Moda", Georgia, serif';c.textAlign='center';
       c.fillText('Foto kamu tampil di sini',x+w/2,y+h*.14)}
   }
   c.restore();
@@ -60,8 +59,8 @@ function drawStage(){
   var c=stage.getContext('2d');
   compose(c,W,H,curSrc(),curFrame(),true);
   if(S.count){
-    c.save();c.fillStyle='rgba(14,19,48,.55)';c.beginPath();c.arc(360,430,150,0,6.2832);c.fill();
-    c.fillStyle='#FFC933';c.font='150px "Bowlby One", Impact, sans-serif';c.textAlign='center';c.fillText(String(S.count),360,490);c.restore();
+    c.save();c.fillStyle='rgba(34,10,20,.6)';c.beginPath();c.arc(360,430,150,0,6.2832);c.fill();c.strokeStyle='#D9B873';c.lineWidth=2;c.stroke();
+    c.fillStyle='#E8CF9A';c.font='italic 700 170px "Bodoni Moda", Georgia, serif';c.textAlign='center';c.fillText(String(S.count),360,492);c.restore();
   }
 }
 function drawThumbs(){
@@ -374,14 +373,14 @@ fName.addEventListener('input',persist);
 
 /* ---------- mulai ---------- */
 function init(){
-  document.title=cfg.TITLE||'Bilik Foto';$('#logo').textContent=(cfg.TITLE||'Bilik Foto').toUpperCase();
+  document.title=cfg.TITLE||'Bilik Foto';$('#logo').textContent=cfg.TITLE||'Bilik Foto';
   try{var n=localStorage.getItem('bf_name');if(n)fName.value=n}catch(x){}
   BF.init({session:false});
   var bn=$('#banner');
   if(!BF.configured){bn.hidden=false;bn.textContent='Bilik Foto belum tersambung ke Supabase. Isi SUPABASE_URL dan SUPABASE_ANON_KEY di config.js.'}
   else if(!BF.sb){bn.hidden=false;bn.textContent='Pustaka Supabase gagal dimuat. Periksa koneksi internet.'}
   buildFrames();loadFrames();renderVoice();syncUI();redraw();
-  try{Promise.all([document.fonts.load('48px "Bowlby One"'),document.fonts.load('700 24px Figtree')]).catch(function(){}).then(function(){redraw()})}catch(x){}
+  try{Promise.all([document.fonts.load('italic 500 36px "Bodoni Moda"'),document.fonts.load('italic 700 100px "Bodoni Moda"')]).catch(function(){}).then(function(){redraw()})}catch(x){}
   if(BF.sb)loadGallery();
   setInterval(function(){if(S.view==='gallery'&&!document.hidden&&$('#lb').hidden)loadGallery()},30000);
 }
