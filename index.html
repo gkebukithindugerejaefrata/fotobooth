@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bilik Foto</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Caveat:wght@600&family=Figtree:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="logo" id="logo">BILIK FOTO</div>
+</header>
+<div class="banner" id="banner" hidden></div>
+
+<main>
+  <section id="view-booth" aria-label="Bilik foto">
+    <p class="lead">Ambil foto, pilih bingkai, tambahkan voice note, lalu simpan ke galeri kegiatan.</p>
+
+    <div class="print">
+      <div class="stage">
+        <canvas id="stage" width="720" height="960" role="img" aria-label="Pratinjau foto dengan bingkai"></canvas>
+        <div id="shutter"></div>
+      </div>
+      <div class="voice" id="voice"></div>
+    </div>
+
+    <div class="actions" id="actions"></div>
+
+    <div class="block">
+      <h2>Bingkai</h2>
+      <div class="frames" id="frames" role="radiogroup" aria-label="Pilih bingkai"></div>
+    </div>
+
+    <div class="block">
+      <h2>Keterangan</h2>
+      <div class="fields">
+        <label for="fName">Nama kamu
+          <input id="fName" type="text" maxlength="60" autocomplete="name" placeholder="Boleh dikosongkan">
+        </label>
+        <label for="fCap">Ucapan atau pesan singkat
+          <input id="fCap" type="text" maxlength="120" autocomplete="off" placeholder="Contoh: Seru banget hari ini!">
+        </label>
+      </div>
+    </div>
+
+    <button type="button" class="btn snap wide" id="save">Simpan ke galeri</button>
+    <p class="hint" id="saveHint">Ambil foto dulu untuk menyimpan.</p>
+  </section>
+
+  <section id="view-gallery" aria-label="Galeri kegiatan" hidden>
+    <div class="gh">
+      <h1>Galeri Kegiatan</h1>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div id="gbody"></div>
+  </section>
+</main>
+
+<nav class="tabs" aria-label="Menu utama">
+  <button type="button" class="tab" id="tab-booth" aria-selected="true" data-go="booth"></button>
+  <button type="button" class="tab" id="tab-gallery" aria-selected="false" data-go="gallery"></button>
+</nav>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Foto kegiatan" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<video id="cam" class="sr" playsinline muted></video>
+<input class="sr" type="file" id="fileCam" accept="image/*" capture="user" tabindex="-1">
+<input class="sr" type="file" id="filePick" accept="image/*" tabindex="-1">
+<input class="sr" type="file" id="voiceCam" accept="audio/*" capture tabindex="-1">
+<input class="sr" type="file" id="voicePick" accept="audio/*" tabindex="-1">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
